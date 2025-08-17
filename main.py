@@ -35,6 +35,61 @@ class Settings:
 THRESHOLDS = Thresholds()
 SETTINGS = Settings()
 
+EXIT_QUOTES = [
+    "There's no place like 127.0.0.1. - Anonymous",
+    "It’s not a bug – it’s an undocumented feature. - Anonymous",
+    "Data is the new oil. - Clive Humby",
+    "Comments: the best way to tell yourself you forgot what you wrote. - Anonymous",
+    "The most effective way to do it, is to do it. - Amelia Earhart",
+    "Never trust a computer you can’t throw out a window. - Steve Wozniak",
+    "Readability counts. - Tim Peters",
+    "Errors should never pass silently - Unless explicitly silenced. - Tim Peters",
+    "In the face of ambiguity, refuse the temptation to guess. - Tim Peters",
+    "Thermal sensors: The CPU’s early warning system. - Anonymous",
+    "Never let a computer know you're in a hurry. - John Carmack",
+    "The problem with troubleshooting is that trouble shoots back. - Anonymous",
+    "Fast, good, cheap: pick any two. - Anonymous",
+    "A cool CPU is a happy CPU. - Anonymous",
+    "Keep calm and cool your CPU. - Anonymous",
+    "Talk is cheap. Show me the code. - Linus Torvalds",
+    "Intelligence is the ability to avoid doing work, yet getting the work done. - Linus Torvalds",
+    "Programming isn’t about what you know; it’s about what you can figure out. - Chris Pine",
+    "Heat is a reminder that even machines have limits. - Anonymous",
+    "Thermal throttling: When your CPU begs for mercy. - Anonymous",
+    "Liquid cooling: Because sometimes air just isn’t enough. - Anonymous",
+    "The Cloud is just someone else's computer. - Richard Stallman",
+    "When I wrote this, only God and I understood what I was doing. Now, God only knows. - Anders Hejlsberg",
+    "Code never lies, comments sometimes do. - Ron Jeffries",
+    "Hardware: The parts of a computer you can kick. - Jeff Pesis",
+    "There are two ways to write error-free programs; only the third one works. - Alan J. Perlis",
+    "Any sufficiently advanced bug is indistinguishable from a feature. - Rich Kulawiec",
+    "Overclocking: Because faster crashes are still crashes. - Anonymous",
+    "If at first you don’t succeed, call it version 1.0. - Anonymous",
+    "Fans: The unsung heroes keeping your CPU from becoming a toaster. - Anonymous",
+    "Sometimes the best upgrade is just blowing the dust out. - Anonymous",
+    "Thermal paste: The unsung hero between your CPU and sanity. - Anonymous",
+    "The CPU: Where all your brilliant ideas get processed… eventually. - Anonymous",
+    "A good CPU never sleeps, but it sure wishes it could. - Anonymous",
+    "The CPU doesn’t care how smart you are—it just follows instructions. - Anonymous",
+    "Every bit of CPU cycle counts… unless you’re procrastinating. - Anonymous",
+    "A CPU’s job is simple: Think fast, don’t overheat. - Anonymous",
+    "The CPU doesn’t judge your code—it just executes it, flaws and all. - Anonymous",
+    "A CPU’s loyalty is to the instructions, not the programmer’s intent. - Anonymous",
+    "The CPU obeys code, not your wishes. - Anonymous",
+    "Heat is the silent enemy of performance. - Anonymous",
+    "Fans spin so your CPU can think. - Anonymous",
+    "Your intent is lost in translation between human brain and CPU cycles. - Anonymous",
+    "Instructions speak louder than intentions to a CPU. - Anonymous",
+    "The CPU follows commands, not hopes or assumptions. - Anonymous",
+    "A hot CPU is a slow CPU in disguise. - Anonymous",
+    "DevOps: Propagating errors in automated ways. - Kai Lentit",
+    "Intentions require empathy; CPUs require precision. - Anonymous",
+    "A computer will do what you tell it to do, but that may be much different from what you had in mind. - Anonymous",
+    "Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program. - Linus Torvalds",
+]
+
+COLORS = ["\033[35m"]  # Magenta
+
 console = Console()
 
 # === Utility functions ===
@@ -278,60 +333,6 @@ if __name__ == "__main__":
     parser.add_argument("--outdir", type=str, default=os.getcwd(),
                         help="Directory to save log file (default: current directory)")
     args = parser.parse_args()
-
-    EXIT_QUOTES = [
-    "There's no place like 127.0.0.1. - Anonymous",
-    "It’s not a bug – it’s an undocumented feature. - Anonymous",
-    "Data is the new oil. - Clive Humby",
-    "Comments: the best way to tell yourself you forgot what you wrote. - Anonymous",
-    "The most effective way to do it, is to do it. - Amelia Earhart",
-    "Never trust a computer you can’t throw out a window. - Steve Wozniak",
-    "Readability counts. - Tim Peters",
-    "Errors should never pass silently - Unless explicitly silenced. - Tim Peters",
-    "In the face of ambiguity, refuse the temptation to guess. - Tim Peters",
-    "Thermal sensors: The CPU’s early warning system. - Anonymous",
-    "Never let a computer know you're in a hurry. - John Carmack",
-    "The problem with troubleshooting is that trouble shoots back. - Anonymous",
-    "Fast, good, cheap: pick any two. - Anonymous",
-    "A cool CPU is a happy CPU. - Anonymous",
-    "Keep calm and cool your CPU. - Anonymous",
-    "Talk is cheap. Show me the code. - Linus Torvalds",
-    "Intelligence is the ability to avoid doing work, yet getting the work done. - Linus Torvalds",
-    "Programming isn’t about what you know; it’s about what you can figure out. - Chris Pine",
-    "Heat is a reminder that even machines have limits. - Anonymous",
-    "Thermal throttling: When your CPU begs for mercy. - Anonymous",
-    "Liquid cooling: Because sometimes air just isn’t enough. - Anonymous",
-    "The Cloud is just someone else's computer. - Richard Stallman",
-    "When I wrote this, only God and I understood what I was doing. Now, God only knows. - Anders Hejlsberg",
-    "Code never lies, comments sometimes do. - Ron Jeffries",
-    "Hardware: The parts of a computer you can kick. - Jeff Pesis",
-    "There are two ways to write error-free programs; only the third one works. - Alan J. Perlis",
-    "Any sufficiently advanced bug is indistinguishable from a feature. - Rich Kulawiec",
-    "Overclocking: Because faster crashes are still crashes. - Anonymous",
-    "If at first you don’t succeed, call it version 1.0. - Anonymous",
-    "Fans: The unsung heroes keeping your CPU from becoming a toaster. - Anonymous",
-    "Sometimes the best upgrade is just blowing the dust out. - Anonymous",
-    "Thermal paste: The unsung hero between your CPU and sanity. - Anonymous",
-    "The CPU: Where all your brilliant ideas get processed… eventually. - Anonymous",
-    "A good CPU never sleeps, but it sure wishes it could. - Anonymous",
-    "The CPU doesn’t care how smart you are—it just follows instructions. - Anonymous",
-    "Every bit of CPU cycle counts… unless you’re procrastinating. - Anonymous",
-    "A CPU’s job is simple: Think fast, don’t overheat. - Anonymous",
-    "The CPU doesn’t judge your code—it just executes it, flaws and all. - Anonymous",
-    "A CPU’s loyalty is to the instructions, not the programmer’s intent. - Anonymous",
-    "The CPU obeys code, not your wishes. - Anonymous",
-    "Heat is the silent enemy of performance. - Anonymous",
-    "Fans spin so your CPU can think. - Anonymous",
-    "Your intent is lost in translation between human brain and CPU cycles. - Anonymous",
-    "Instructions speak louder than intentions to a CPU. - Anonymous",
-    "The CPU follows commands, not hopes or assumptions. - Anonymous",
-    "A hot CPU is a slow CPU in disguise. - Anonymous",
-    "DevOps: Propagating errors in automated ways. - Kai Lentit"
-    "Intentions require empathy; CPUs require precision. - Anonymous",
-    "A computer will do what you tell it to do, but that may be much different from what you had in mind. - Anonymous",
-    "Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program. - Linus Torvalds"
-    ]
-    COLORS = ["\033[35m"]  # Magenta
 
     monitor = CPUMonitor()
     ui = CPUUI(monitor)
