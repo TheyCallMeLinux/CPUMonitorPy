@@ -106,21 +106,25 @@ def colorize(value: float, warn: float, crit: float, unit: str = "") -> str:
 
 # === CPU Monitor ===
 class CPUMonitor(threading.Thread):
-    """Monitor CPU usage & temperature with a sliding window in a separate thread."""
-
     def __init__(self):
         super().__init__(daemon=True)
         self.cpu_samples: Deque[float] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.sample_interval_sec))
         self.temp_samples: Deque[float] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.temp_sample_interval_sec))
         self.freq_samples: Deque[float] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.sample_interval_sec))
         self.load_samples: Deque[tuple] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.sample_interval_sec))
+        self.timestamps: Deque[str] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.sample_interval_sec))
+
+        # === NEW: Absolute peaks ===
+        self.cpu_peak: float = 0.0
+        self.temp_peak: float = 0.0
+
         self._last_temp_time = 0.0
         self.running = threading.Event()
         self.running.set()
         self._sensor_key = None
-        self.start_time = datetime.now()   # record when monitoring starts
-        self.end_time = None               # used for the summary report
-        self.timestamps: Deque[str] = deque(maxlen=int(SETTINGS.window_duration_sec / SETTINGS.sample_interval_sec))
+        self.start_time = datetime.now()
+        self.end_time = None
+
 
     def _detect_sensor_key(self):
         try:
@@ -140,12 +144,16 @@ class CPUMonitor(threading.Thread):
             time.sleep(SETTINGS.sample_interval_sec)
 
     def sample(self) -> None:
-        """Record CPU usage, temperature, frequency, and load samples."""
         try:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.timestamps.append(now)
 
-            self.cpu_samples.append(psutil.cpu_percent(interval=None))
+            cpu = psutil.cpu_percent(interval=None)
+            self.cpu_samples.append(cpu)
+
+            # Update absolute CPU peak
+            if cpu > self.cpu_peak:
+                self.cpu_peak = cpu
 
             cpu_freq = psutil.cpu_freq()
             self.freq_samples.append(cpu_freq.current if cpu_freq else 0.0)
@@ -157,6 +165,9 @@ class CPUMonitor(threading.Thread):
                 temp = self._read_temperature()
                 if temp is not None:
                     self.temp_samples.append(temp)
+                    # Update absolute temperature peak
+                    if temp > self.temp_peak:
+                        self.temp_peak = temp
                 self._last_temp_time = now_ts
         except Exception as e:
             console.log(f"[red]Error during sampling: {e}[/red]")
@@ -210,33 +221,36 @@ class CPUUI:
         self.progress.update(self.cpu_task_id, completed=current_cpu)
 
         avg_cpu = m.avg(m.cpu_samples)
-        peak_cpu = max(m.cpu_samples, default=0)
+        peak_cpu = m.cpu_peak  # use absolute peak
         cpu_load = psutil.getloadavg()
 
         table = Table.grid(expand=True)
         table.add_row(self.progress)
         table.add_row(
             f"Average CPU: {colorize(avg_cpu, THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')} | "
-            f"Peak: {colorize(peak_cpu, THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')} | "
-            f"1 minute load average: {cpu_load[0]:.2f}"
+            f"Peak CPU: {colorize(peak_cpu, THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')} | "
+            f"1 min load avg: {cpu_load[0]:.2f}"
         )
         table.add_row(
             f"Logical CPU Cores: {self._cpu_info_cached[0]} | "
             f"Physical CPU Cores: {self._cpu_info_cached[1]}"
         )
-        # Get temperature
+
+        # Temperature
         if m.temp_samples:
             current_temp = m.temp_samples[-1]
             avg_temp = m.avg(m.temp_samples)
+            peak_temp = m.temp_peak  # use absolute peak
             table.add_row(
                 f"Current Temp: {colorize(current_temp, THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')} | "
-                f"Average Temp: {colorize(avg_temp, THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}"
+                f"Average Temp: {colorize(avg_temp, THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')} | "
+                f"Peak Temp: {colorize(peak_temp, THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}"
             )
         else:
             table.add_row("[yellow]No temperature data[/yellow]")
-        # Get CPU frequency
+
+        # CPU frequency
         cpu_freq = psutil.cpu_freq()
-        time.sleep(SETTINGS.sample_interval_sec)
         if cpu_freq:
             table.add_row(f"Current CPU Frequency: {int(cpu_freq.current)} MHz")
 
@@ -263,7 +277,6 @@ def print_summary(m: CPUMonitor):
         total_seconds = int(duration.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-
         duration_str = f"{hours}h {minutes}m {seconds}s"
 
         console.print(f"[cyan]Monitoring started:[/cyan] {start_str}")
@@ -273,14 +286,14 @@ def print_summary(m: CPUMonitor):
     if m.cpu_samples:
         console.print(f"Average CPU usage: {colorize(m.avg(m.cpu_samples), THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')}")
         console.print(f"Min CPU usage: {colorize(min(m.cpu_samples), THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')}")
-        console.print(f"Max CPU usage: {colorize(max(m.cpu_samples), THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')}")
+        console.print(f"Peak CPU usage: {colorize(m.cpu_peak, THRESHOLDS.cpu_warn, THRESHOLDS.cpu_crit, '%')}")
     else:
         console.print("[yellow]No CPU usage data collected.[/yellow]")
 
     if m.temp_samples:
         console.print(f"Average temperature: {colorize(m.avg(m.temp_samples), THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}")
         console.print(f"Min temperature: {colorize(min(m.temp_samples), THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}")
-        console.print(f"Max temperature: {colorize(max(m.temp_samples), THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}")
+        console.print(f"Peak temperature: {colorize(m.temp_peak, THRESHOLDS.temp_warn, THRESHOLDS.temp_crit, '°C')}")
     else:
         console.print("[yellow]No temperature data was collected.[/yellow]")
 
